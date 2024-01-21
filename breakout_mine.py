@@ -23,7 +23,7 @@ paddle_x = (WIDTH - PADDLE_WIDTH) // 2
 paddle_y = HEIGHT - 50
 
 # ボールサイズ
-BALL_RADIUS = 20
+BALL_RADIUS = 30
 ball_speed_x = 5
 ball_speed_y = 5
 
@@ -33,7 +33,8 @@ ball_x = (WIDTH - BALL_RADIUS) // 2
 ball_y = HEIGHT - 80
 
 # ブロック設定
-BLOCK_WIDTH, BLOCK_HEIGHT = 50, 20
+BLOCK_WIDTH, BLOCK_HEIGHT, BLOCK_SPACE = 45, 20, 5
+block_colors = ["RED", "GOLD", "ORANGE", "PINK"]
 block_rows = 4
 block_cols = 12
 blocks = []
@@ -57,7 +58,7 @@ def gameinit():
     blocks.clear()
     for row in range(block_rows):
         for col in range(block_cols):
-            block = pygame.Rect(col * BLOCK_WIDTH, row * BLOCK_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT)
+            block = [pygame.Rect(col * (BLOCK_SPACE + BLOCK_WIDTH), row * (BLOCK_SPACE + BLOCK_HEIGHT), BLOCK_WIDTH, BLOCK_HEIGHT), block_colors[row]]
             blocks.append(block)
 
 # title
@@ -100,7 +101,7 @@ def gamestage():
 
     # ブロックとの衝突判定 colliderect
     for block in blocks:
-        if block.colliderect(pygame.Rect(ball_x - BALL_RADIUS, ball_y - BALL_RADIUS, 2*BALL_RADIUS, 2*BALL_RADIUS)):
+        if block[0].colliderect(pygame.Rect(ball_x - BALL_RADIUS, ball_y - BALL_RADIUS, 2*BALL_RADIUS, 2*BALL_RADIUS)):
             blocks.remove(block)
             ball_speed_y = -ball_speed_y
 
@@ -114,7 +115,7 @@ def gamestage():
     pygame.draw.circle(screen, pygame.Color("CYAN"), (ball_x, ball_y), BALL_RADIUS)
 
     for block in blocks:
-        pygame.draw.rect(screen, RED, block)
+        pygame.draw.rect(screen, block[1], block[0])
 
 # game over
 def gameover():
@@ -131,6 +132,22 @@ def gameover():
         gameinit()
         page = "main"
 
+def gameclear():
+    global page
+    screen.fill(pygame.Color("BLACK"))
+    font = pygame.font.Font(None, 50)
+    text = font.render("CONGRATULATIONS!", True, pygame.Color("WHITE"))
+    screen.blit(text, (100, 100))
+    font = pygame.font.Font(None, 50)
+    text = font.render("YOU CLEARED THE GAME", True, pygame.Color("WHITE"))
+    screen.blit(text, (100, 150))
+    text = font.render("PRESS SPACE TO RESTART", True, pygame.Color("WHITE"))
+    screen.blit(text, (100, 200))
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE]:
+        gameinit()
+        page = "main"
+
 # ゲームループ
 gameinit()
 while True:
@@ -141,6 +158,8 @@ while True:
         title()
     elif page == "gameover":
         gameover()
+    elif len(blocks) == 0:  # ブロックがなくなったらゲームクリア
+        gameclear()
     else:
         gamestage()
 
