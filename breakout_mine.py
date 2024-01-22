@@ -3,6 +3,7 @@ import sys
 
 #初期化
 pygame.init()
+score = 0
 
 # 画面サイズ
 WIDTH, HEIGHT = 600, 400
@@ -44,7 +45,11 @@ page = "title"
 
 # initilize
 def gameinit():
-    global paddle_x, paddle_y, ball_x, ball_y
+    global paddle_x, paddle_y, ball_x, ball_y, score
+
+    # スコア初期化
+    score = 0
+
     # ボール位置
     BALL_RADIUS = 20
     ball_x = (WIDTH - BALL_RADIUS) // 2
@@ -73,7 +78,7 @@ def title():
         page = "main"
 
 def gamestage():
-    global page, paddle_x, paddle_y, ball_x, ball_y, ball_speed_x, ball_speed_y
+    global score, page, paddle_x, paddle_y, ball_x, ball_y, ball_speed_x, ball_speed_y
 
     # パドル操作
     keys = pygame.key.get_pressed()
@@ -104,6 +109,7 @@ def gamestage():
         if block[0].colliderect(pygame.Rect(ball_x - BALL_RADIUS, ball_y - BALL_RADIUS, 2*BALL_RADIUS, 2*BALL_RADIUS)):
             blocks.remove(block)
             ball_speed_y = -ball_speed_y
+            score += 1
 
     # ゲームオーバー判定
     if ball_y + BALL_RADIUS > HEIGHT:
@@ -113,20 +119,26 @@ def gamestage():
     screen.fill(pygame.Color("NAVY"))
     pygame.draw.rect(screen, pygame.Color("CYAN"), (paddle_x, paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT))
     pygame.draw.circle(screen, pygame.Color("CYAN"), (ball_x, ball_y), BALL_RADIUS)
+    font = pygame.font.Font(None, 50)
+    text = font.render("SCORE:" + str(score), True, pygame.Color("RED"))
+    screen.blit(text, (400,250))
 
     for block in blocks:
         pygame.draw.rect(screen, block[1], block[0])
 
 # game over
 def gameover():
-    global page
+    global score, page
     screen.fill(pygame.Color("NAVY"))
     font = pygame.font.Font(None, 100)
     text = font.render("GAME OVER", True, pygame.Color("RED"))
     screen.blit(text, (100,100))
     font = pygame.font.Font(None, 50)
-    text = font.render("PRESS SPACE TO RETRY", True, pygame.Color("RED"))
+    text = font.render("YOUR SCORE IS " + str(score), True, pygame.Color("GOLD"))
     screen.blit(text, (100,200))
+    font = pygame.font.Font(None, 50)
+    text = font.render("PRESS SPACE TO RETRY", True, pygame.Color("RED"))
+    screen.blit(text, (100,300))
     keys = pygame.key.get_pressed()
     if keys[pygame.K_SPACE]:
         gameinit()
