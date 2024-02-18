@@ -57,10 +57,23 @@ class MyScene (Scene):
 		self.exit = SpriteNode('plc:Chest_Closed',parent=self, size=(size, size), position=(init_x+exit_location[0]*size, init_y+420-exit_location[1]*size))
 
 		# Player		
-		self.player = SpriteNode('plc:Character_Horn_Girl', parent=self, size=(size, size), position=(init_x+player_location[0]*size, init_y+420-player_location[1]*size))
+		self.player = SpriteNode('plc:Character_Horn_Girl', parent=self, size=(size, size))
 
 		# Cargo	
-		self.cargo = SpriteNode('plc:Key', parent=self, size=(size, size), position=(init_x+cargo_location[0]*size, init_y+420-cargo_location[1]*size))
+		self.cargo = SpriteNode('plc:Key', parent=self, size=(size, size))
+		
+		# Game Start
+		self.new_game()
+
+	def new_game(self):
+		global time_count
+		time_count = 0
+		player_location[0] = 1
+		player_location[1] = 0
+		cargo_location[0] = 1
+		cargo_location[1] = 1
+		self.player.position = (init_x+player_location[0]*size, init_y+420-player_location[1]*size)
+		self.cargo.position = (init_x+cargo_location[0]*size, init_y+420-cargo_location[1]*size)
 
 	def update(self):
 		global status, time_count
@@ -72,6 +85,7 @@ class MyScene (Scene):
 				sv.scene = Result()		
 				sv.present() # リザルト画面表示
 				status = 1 #開始画面に戻す
+				self.new_game()
 				
 	def touch_ended(self, touch):
 		global init_x, init_y, size, player_location
@@ -112,6 +126,7 @@ class MyScene (Scene):
 						self.move(key, player_location, self.player)
 				elif self.is_not_box(key, player_location):
 					self.move(key, player_location, self.player)
+		self.judgment()
 	
 	def is_not_box(self, key, location): #keyの方向が壁でなければ True を返す
 		if key == 'up':
@@ -141,7 +156,6 @@ class MyScene (Scene):
 		elif key == 'right':
 			location[0] += 1
 			obj.position = (init_x+location[0]*size, init_y+420-location[1]*size)
-		self.judgment()
 
 	def is_cargo(self, key): #keyの方向が荷物なら True を返す
 		if key == 'up':
@@ -195,7 +209,7 @@ class MyScene (Scene):
 				touch += 1
 			if touch >= 2: #touchが2以上だと荷物は動かせないのでゲームオーバー
 				message = 'GAME OVER'
-				status = 2            
+				status = 2
 
 if __name__ == '__main__':
 	run(MyScene(), show_fps=False)

@@ -8,8 +8,8 @@ A = Action
 card_w = 140 #カード横幅
 card_h = 190 #カード縦幅
 m = 10 #カード間隔
-rows = 2 #カード縦列数
-columns = 4 #カード横列数
+rows = 3 #カード縦列数
+columns = 6 #カード横列数
 
 # カード表
 cards_f = []
@@ -17,45 +17,85 @@ cards_f.append('card:ClubsA')
 cards_f.append('card:Clubs2')
 cards_f.append('card:Clubs3')
 cards_f.append('card:Clubs4')
+cards_f.append('card:Clubs5')
+cards_f.append('card:Clubs6')
+cards_f.append('card:Clubs7')
+cards_f.append('card:Clubs8')
+cards_f.append('card:Clubs9')
 cards_f.append('card:HeartsA')
 cards_f.append('card:Hearts2')
 cards_f.append('card:Hearts3')
 cards_f.append('card:Hearts4')
-random.shuffle(cards_f)
+cards_f.append('card:Hearts5')
+cards_f.append('card:Hearts6')
+cards_f.append('card:Hearts7')
+cards_f.append('card:Hearts8')
+cards_f.append('card:Hearts9')
 
 #カード状態(Trueで裏)
 cards_stat = []
 for i in range(rows*columns):
 	cards_stat.append(True)
+
 turn_cards_f = [] #めくったカード情報
 count = 0
 wait_flg = False
 total = 0
 point = 0
-result_flg = False
 
 class Result (Scene):
 	def setup(self):
-		self.background_color = '#3c8242' #背景色	
+		SpriteNode(anchor_point=(0, 0), color = 'green', parent = self, size = self.size)
+		message = ['Score',
+							 'Challenge :',
+							 'Result :',
+							 'Tap to close']
+		self.labels = []
+
+	def setscore(self):
+		# ラベル初期化
+		for label in self.labels:
+			label.remove_from_parent()
 		message = ['Score',
 							 'Challenge :' + str(total),
-							 'Result :' + str(point*100 // total) + '%']
-		for i in range(len(message)):
-				label = LabelNode(message[i], parent=self, font=('Arial',20), position=(self.size.w/2,400-i*50), color='orange')
+							 'Result :' + str(point*100 // total) + '%',
+							 'Tap to close']
 
+		for i in range(len(message)):
+				self.labels.append(LabelNode(message[i], parent=self, font=('Arial',20), position=(self.size.w/2,400-i*50), color='orange'))
+
+	def touch_ended(self, touch):
+		gamescene.new_game()
+		self.dismiss_modal_scene()
+			
 class Game (Scene):
 	def setup(self):
-		global card_w, card_h, m, rows, columns
-		init_x = self.size.w/2 - card_w*(columns/2) #カード開始x位置
-		init_y = self.size.h/2 - card_h*(rows/2) #カード開始y位置
-
+		self.background_color = '#004f82' #背景色
 		self.cards = [] #カード用配列 
 		self.turn_cards = [] #めくったカード
-		self.background_color = '#004f82' #背景色
+		self.new_game()
 
+	def new_game(self):
+		global total, point, card_w, card_h, m, rows, columns
+		init_x = self.size.w/2 - card_w*(columns/2) #カード開始x位置
+		init_y = self.size.h/2 - card_h*(rows/2) #カード開始y位置
+		
+		random.shuffle(cards_f) #カードをシャッフル
+		total = 0
+		point = 0
+		
+		# カードを初期化
+		for card in self.cards:
+			card.remove_from_parent()
+		
+		# カードの状態を全て裏に	
+		for i in range(rows*columns):
+			cards_stat[i] = True
+		
 		# Make Card list
 		x = init_x
 		y = init_y
+		self.cards = [] #カード用配列 
 		for row in range(rows):
 			for column in range(columns):
 				self.cards.append(SpriteNode('card:BackBlue1', parent=self, position=(x, y)))
@@ -102,10 +142,12 @@ class Game (Scene):
 			self.call_result()
 
 	def call_result(self):
-		# リザルト画面用
-		sv = SceneView()
-		sv.scene = Result()		
-		sv.present()
+		self.present_modal_scene(resultscene)
+		resultscene.setscore()
 
 if __name__ == '__main__':
-	run(Game(), PORTRAIT, show_fps=True)
+	sv = SceneView()
+	gamescene = Game()
+	resultscene = Result()
+	sv.scene = gamescene
+	sv.present()
